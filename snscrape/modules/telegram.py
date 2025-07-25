@@ -93,21 +93,23 @@ class TelegramChannelScraper(snscrape.base.Scraper):
 				_logger.warning(f'Possibly incorrect URL: {rawUrl!r}')
 			url = rawUrl.replace('//t.me/', '//t.me/s/')
 			date = datetime.datetime.strptime(dateDiv.find('time', datetime = True)['datetime'].replace('-', '', 2).replace(':', ''), '%Y%m%dT%H%M%S%z')
-			viewDiv = footerDiv.find('span', class_ = 'tgme_widget_message_views')
-			viewText = viewDiv.text
-			viewPostfix = viewText[-1].lower()
-			if viewPostfix.isdigit():
-				viewCount = int(float(viewText))
-			else:
-				viewFactor = {
-					'k': 1000,
-					'm': 1000 * 1000,
-					'g': 1000 * 1000 * 1000,
-				}.get(viewPostfix)
-				if viewFactor:
-					viewCount = int(float(viewText[:-1])) * viewFactor
+			if (viewDiv := footerDiv.find('span', class_ = 'tgme_widget_message_views')):
+				viewText = viewDiv.text
+				viewPostfix = viewText[-1].lower()
+				if viewPostfix.isdigit():
+					viewCount = int(float(viewText))
 				else:
-					raise snscrape.base.ScraperException(f'Got unknown postfix from views text: "{viewText}"')
+					viewFactor = {
+						'k': 1000,
+						'm': 1000 * 1000,
+						'g': 1000 * 1000 * 1000,
+					}.get(viewPostfix)
+					if viewFactor:
+						viewCount = int(float(viewText[:-1])) * viewFactor
+					else:
+						raise snscrape.base.ScraperException(f'Got unknown postfix from views text: "{viewText}"')
+			else:
+				viewCount = None
 			if (message := post.find('div', class_ = 'tgme_widget_message_text')):
 				for br in message.find_all('br'):
 					br.replace_with('\n')
