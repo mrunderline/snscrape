@@ -109,6 +109,8 @@ class TelegramChannelScraper(snscrape.base.Scraper):
 				else:
 					raise snscrape.base.ScraperException(f'Got unknown postfix from views text: "{viewText}"')
 			if (message := post.find('div', class_ = 'tgme_widget_message_text')):
+				for br in message.find_all('br'):
+					br.replace_with('\n')
 				content = message.text
 				outlinks = []
 				for link in post.find_all('a'):
