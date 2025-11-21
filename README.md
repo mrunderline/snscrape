@@ -3,6 +3,7 @@ snscrape is a scraper for social networking services (SNS). It scrapes things li
 
 The following services are currently supported:
 
+* Eitaa: channels
 * Facebook: user profiles, groups, and communities (aka visitor posts)
 * Instagram: user profiles, hashtags, and locations
 * Mastodon: user profiles and toots (single or thread)
@@ -22,7 +23,7 @@ Note that one of the dependencies, lxml, also requires libxml2 and libxslt to be
 
 If you want to use the development version:
 
-    pip3 install git+https://github.com/JustAnotherArchivist/snscrape.git
+    pip3 install git+https://github.com/mrunderline/snscrape.git
 
 ## Usage
 ### CLI
