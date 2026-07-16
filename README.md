@@ -3,6 +3,7 @@ snscrape is a scraper for social networking services (SNS). It scrapes things li
 
 The following services are currently supported:
 
+* Bale: channels
 * Eitaa: channels
 * Facebook: user profiles, groups, and communities (aka visitor posts)
 * Instagram: user profiles, hashtags, and locations
