@@ -75,7 +75,9 @@ class EitaaChannelScraper(snscrape.base.Scraper):
 		if self._initialPage is None:
 			r = self._get(f'https://eitaa.com/{self._name}', headers = self._headers)
 			if r.status_code != 200:
-				raise snscrape.base.ScraperException(f'Got status code {r.status_code}')
+				self._initialPage = r
+				self._initialPageSoup = None
+				return self._initialPage, self._initialPageSoup
 			self._initialPage, self._initialPageSoup = r, bs4.BeautifulSoup(r.text, 'lxml')
 		return self._initialPage, self._initialPageSoup
 
@@ -182,6 +184,8 @@ class EitaaChannelScraper(snscrape.base.Scraper):
 
 	def get_items(self):
 		r, soup = self._initial_page()
+		if soup is None:
+			return
 		while True:
 			yield from self._soup_to_items(soup, r.url)
 			# Look for pagination link
@@ -200,7 +204,6 @@ class EitaaChannelScraper(snscrape.base.Scraper):
 		
 		channelInfoDiv = soup.find('div', class_ = 'etme_channel_info')
 		if not channelInfoDiv:
-			_logger.warning('Channel info div not found')
 			return None
 		
 		# Extract title and verified status

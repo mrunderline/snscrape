@@ -175,12 +175,15 @@ class TelegramChannelScraper(snscrape.base.Scraper):
 		# /channel has a more accurate member count and bigger profile picture
 		r = self._get(f'https://t.me/{self._name}', headers = self._headers)
 		if r.status_code != 200:
-			raise snscrape.base.ScraperException(f'Got status code {r.status_code}')
+			return None
 		soup = bs4.BeautifulSoup(r.text, 'lxml')
 		membersDiv = soup.find('div', class_ = 'tgme_page_extra')
-		if membersDiv.text.endswith(' subscribers'):
+		if membersDiv is not None and membersDiv.text.endswith(' subscribers'):
 			kwargs['members'] = int(membersDiv.text[:-12].replace(' ', ''))
-		kwargs['photo'] = soup.find('img', class_ = 'tgme_page_photo_image').attrs['src']
+		photoImg = soup.find('img', class_ = 'tgme_page_photo_image')
+		if photoImg is None:
+			return None
+		kwargs['photo'] = photoImg.attrs['src']
 
 		r, soup = self._initial_page()
 		if '/s/' not in r.url: # Redirect on channels without public posts

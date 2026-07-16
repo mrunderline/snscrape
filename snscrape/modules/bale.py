@@ -80,7 +80,9 @@ class BaleChannelScraper(snscrape.base.Scraper):
 		if self._initialPage is None:
 			r = self._get(f'https://ble.ir/s/{self._name}', headers=self._headers)
 			if r.status_code != 200:
-				raise snscrape.base.ScraperException(f'Got status code {r.status_code}')
+				self._initialPage = r
+				self._initialJson = None
+				return self._initialPage, self._initialJson
 			self._initialPage = r
 			self._initialJson = self._parse_embedded_json(r.text)
 		return self._initialPage, self._initialJson
@@ -93,17 +95,32 @@ class BaleChannelScraper(snscrape.base.Scraper):
 				decoded = json.loads('"' + payload + '"')
 			except json.JSONDecodeError:
 				continue
-			if ':' not in decoded:
-				continue
-			_, valueStr = decoded.split(':', 1)
-			try:
-				parsed = json.loads(valueStr)
-			except json.JSONDecodeError:
-				continue
-			result = BaleChannelScraper._find_data_dict(parsed)
-			if result:
-				return result
-		raise snscrape.base.ScraperException('Could not parse channel data from page; the page structure may have changed')
+			for line in decoded.split('\n'):
+				if ':' not in line:
+					continue
+				_, valueStr = line.split(':', 1)
+				try:
+					parsed = json.loads(valueStr)
+				except json.JSONDecodeError:
+					continue
+				result = BaleChannelScraper._find_data_dict(parsed)
+				if result:
+					return result
+		return None
+
+	@staticmethod
+	def _has_not_found(obj):
+		if isinstance(obj, dict):
+			if 'notFound' in obj and obj['notFound'] not in (None, False, '$undefined'):
+				return True
+			for v in obj.values():
+				if BaleChannelScraper._has_not_found(v):
+					return True
+		elif isinstance(obj, (list, tuple)):
+			for item in obj:
+				if BaleChannelScraper._has_not_found(item):
+					return True
+		return False
 
 	@staticmethod
 	def _find_data_dict(obj):
@@ -177,6 +194,8 @@ class BaleChannelScraper(snscrape.base.Scraper):
 
 	def get_items(self):
 		r, data = self._initial_page()
+		if data is None:
+			return
 		nick = data['group'].get('nick', self._name)
 		messages = data.get('messages', [])
 		if not messages:
@@ -208,6 +227,8 @@ class BaleChannelScraper(snscrape.base.Scraper):
 
 	def _get_entity(self):
 		_, data = self._initial_page()
+		if data is None:
+			return None
 		return self._extract_channel_info(data)
 
 	@classmethod
