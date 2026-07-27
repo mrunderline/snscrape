@@ -175,19 +175,24 @@ class TelegramChannelScraper(snscrape.base.Scraper):
 		# /channel has a more accurate member count and bigger profile picture
 		r = self._get(f'https://t.me/{self._name}', headers = self._headers)
 		if r.status_code != 200:
-			return None
+			raise snscrape.base.EntityUnavailable(f'Channel "{self._name}" is not available')
 		soup = bs4.BeautifulSoup(r.text, 'lxml')
 		membersDiv = soup.find('div', class_ = 'tgme_page_extra')
 		if membersDiv is not None and membersDiv.text.endswith(' subscribers'):
 			kwargs['members'] = int(membersDiv.text[:-12].replace(' ', ''))
 		photoImg = soup.find('img', class_ = 'tgme_page_photo_image')
 		if photoImg is None:
-			return None
-		kwargs['photo'] = photoImg.attrs['src']
+			r2, soup2 = self._initial_page()
+			if '/s/' in r2.url:
+				pass
+			else:
+				raise snscrape.base.EntityUnavailable(f'Channel "{self._name}" is not available')
+		else:
+			kwargs['photo'] = photoImg.attrs['src']
 
 		r, soup = self._initial_page()
 		if '/s/' not in r.url: # Redirect on channels without public posts
-			return
+			raise snscrape.base.EntityUnavailable(f'Channel "{self._name}" has no public posts')
 		channelInfoDiv = soup.find('div', class_ = 'tgme_channel_info')
 		assert channelInfoDiv, 'channel info div not found'
 		titleDiv = channelInfoDiv.find('div', class_ = 'tgme_channel_info_header_title')
