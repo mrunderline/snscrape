@@ -54,10 +54,10 @@ class Channel(snscrape.base.Item):
 	links: typing.Optional[snscrape.base.IntWithGranularity] = None
 	files: typing.Optional[snscrape.base.IntWithGranularity] = None
 
-	photosGranularity = snscrape.base._DeprecatedProperty('photosGranularity', lambda self: self.photos.granularity, 'photos.granularity')
-	videosGranularity = snscrape.base._DeprecatedProperty('videosGranularity', lambda self: self.videos.granularity, 'videos.granularity')
-	linksGranularity = snscrape.base._DeprecatedProperty('linksGranularity', lambda self: self.links.granularity, 'links.granularity')
-	filesGranularity = snscrape.base._DeprecatedProperty('filesGranularity', lambda self: self.files.granularity, 'files.granularity')
+	photosGranularity = snscrape.base._DeprecatedProperty('photosGranularity', lambda self: self.photos.granularity if self.photos else None, 'photos.granularity')
+	videosGranularity = snscrape.base._DeprecatedProperty('videosGranularity', lambda self: self.videos.granularity if self.videos else None, 'videos.granularity')
+	linksGranularity = snscrape.base._DeprecatedProperty('linksGranularity', lambda self: self.links.granularity if self.links else None, 'links.granularity')
+	filesGranularity = snscrape.base._DeprecatedProperty('filesGranularity', lambda self: self.files.granularity if self.files else None, 'files.granularity')
 
 	def __str__(self):
 		return f'https://t.me/s/{self.username}'
