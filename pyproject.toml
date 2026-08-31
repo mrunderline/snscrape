@@ -33,7 +33,7 @@ dependencies = [
 	'pytz; python_version < "3.9.0"',
 	'filelock',
 ]
-requires-python = '~=3.8'
+requires-python = '>=3.8'
 dynamic = ['version']
 
 [project.urls]

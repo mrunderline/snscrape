@@ -154,7 +154,7 @@ class BaleChannelScraper(snscrape.base.Scraper):
 	def _message_to_item(self, msg, nick):
 		rid = msg['rid']
 		date = datetime.datetime.fromtimestamp(msg['date'] / 1000, tz=datetime.timezone.utc)
-		viewCount = msg['viewCount']
+		viewCount = msg.get('viewCount', 0)
 		url = f'https://ble.ir/s/{nick}/{rid}'
 
 		message = msg.get('message', {})
